@@ -70,6 +70,15 @@ const Index: React.FC = () => {
             },
             (created: boolean) => console.log(`createChannel riders returned '${created}'`) 
         );
+        PushNotification.createChannel(
+            {
+                channelId: "routine", 
+                channelName: "루틴 알람",
+                importance: 4, 
+                vibrate: true, 
+            },
+            (created: boolean) => console.log(`createChannel riders returned '${created}'`) 
+        );
 
 
         const keyShow = () => {
@@ -159,7 +168,14 @@ const Index: React.FC = () => {
                         }
                         return value;
                     })
-                    setTodoList(typeList);
+                    const goalList = typeList.map(item => {
+                        if(new Date() > new Date(item.alarmDate)) {
+                            return {...item, alarm : false}
+                        } else {
+                            return item
+                        }
+                    })
+                    setTodoList(goalList);
                 }
                 if (rouId !== null) {
                     setRoutineId(parseInt(rouId))
@@ -260,6 +276,26 @@ const Index: React.FC = () => {
         setRoutineId(item => item + 1)
     }
 
+    const onRoutineEnd = (id : number, date : Date) => {
+        setRoutineList(list => {
+            return list.map(item => 
+              item.id === id
+                ? { ...item, end: true, endDate: date }
+                : item
+            );
+          });
+    }
+
+    const onRoutineRe = (id : number) => {
+        setRoutineList(list => {
+            return list.map(item => 
+              item.id === id
+                ? { ...item, end: false }
+                : item
+            );
+          });
+    }
+
     const onMove = (dt : Date , latId : number) => {
         setTodoList(list => {
             const newItem: TodoDTO | undefined = list.find(fd => fd.id === latId);
@@ -289,6 +325,7 @@ const Index: React.FC = () => {
                     <Main globalFont={globalFont} keys={key} routineId={routineId}
                         onTodoAlarm={onTodoAlarm} onCancelAlarm={onCancelAlarm} onTodoDTO={onTodoDTO} onTodoCheck={onTodoCheck}
                         onRoutineCheck={onRoutineCheck} onMove={onMove} onTodoDelete={onTodoDelete} onRoutineDTO={onRoutineDTO}
+                        onRoutineEnd={onRoutineEnd} onRoutineRe={onRoutineRe}
                         todoList={todoList} routineList={routineList}/>
                     <Attain/>
                 </ScrollView>
